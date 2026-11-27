@@ -147,6 +147,9 @@ h2{font-size:15px;font-weight:700;margin:6px 0 8px;color:var(--mute)}
 .onb ul li::before{content:"✓";flex:none;width:20px;height:20px;border-radius:50%;background:var(--soft);color:var(--accent);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .onb .yes{width:100%;min-height:50px;border:0;border-radius:12px;background:var(--blue);color:#fff;font:700 16px inherit;font-family:inherit;cursor:pointer}
 .onb .no{width:100%;min-height:44px;margin-top:6px;border:0;background:none;color:var(--mute);font:600 14.5px inherit;font-family:inherit;cursor:pointer}
+.users{margin:6px 0 0;font-size:12.5px;color:light-dark(rgba(12,37,71,.7),rgba(238,246,255,.7))}
+.users b{font-weight:800;color:var(--headink)}
+.users[hidden]{display:none}
 .toast{position:fixed;left:50%;bottom:calc(80px + var(--sab));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:14px;padding:10px 14px;border-radius:10px;max-width:90vw;z-index:9}
 .toast[hidden]{display:none}
 footer{padding:14px 18px 20px;font-size:12px;color:var(--mute);line-height:1.6}footer a{color:inherit}
@@ -161,6 +164,7 @@ nav.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;
 <div class="app">
 <header>
   <div class="top"><h1 class="brand" style="font-size:inherit;margin:0">오늘의 두리버스</h1><span class="date" id="date"></span><span class="pill" id="status"></span></div>
+  <p class="users" id="users" hidden></p>
   <div class="next" id="next"></div>
 </header>
 
@@ -369,6 +373,14 @@ function maybeOnboard(){
   try{if(navigator.permissions){navigator.permissions.query({name:"geolocation"}).then(r=>{if(r.state==="granted"){store("duri-onb","granted");return}if(r.state==="denied"){store("duri-onb","denied");return}show()}).catch(show);return}}catch(e){}
   show();
 }
+
+// 누적 이용자 수 (GoatCounter 공개 카운터, 최대 4시간 캐시)
+function loadUsers(){
+  fetch("https://duribus.goatcounter.com/counter/TOTAL.json").then(r=>r.ok?r.json():null).then(d=>{
+    if(!d||!d.count)return;const n=+String(d.count).replace(/[^0-9]/g,"");if(!(n>=50))return;
+    const el=$("users");el.innerHTML=`지금까지 <b class="num">${n.toLocaleString("ko-KR")}명</b>이 두리버스를 확인했어요`;el.hidden=false;
+  }).catch(()=>{});
+}
 function render(){
   const now=kst();const ymd=peekDate||now.ymd;const isToday=ymd===now.ymd;const info=dayInfo(ymd);
   const nowMin=isToday&&!info.off?now.min:-1;
@@ -430,6 +442,7 @@ setTimeout(showInst,1200);
 $("onbYes").addEventListener("click",()=>{store("duri-onb","yes");$("onb").hidden=true;track("위치안내/허용","위치 안내에서 허용");locate(true)});
 $("onbNo").addEventListener("click",()=>{store("duri-onb","no");$("onb").hidden=true;track("위치안내/건너뜀","위치 안내 건너뜀")});
 setTimeout(maybeOnboard,700);
+loadUsers();
 $("from").addEventListener("change",e=>setStop(e.target.value));
 $("next").addEventListener("click",e=>{if(e.target.closest(".loc"))locate(true)});
 $("swap").addEventListener("click",()=>{if(!dest)return;const a=stop;stop=dest;dest=a;nearNote="";dir=null;store("duri-stop",stop);store("duri-dest",dest);track("출발도착바꾸기","출발·도착 바꾸기");render()});
