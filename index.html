@@ -265,6 +265,18 @@ function chooseOnMap(k){
   closeMap();
 }
 function closeMap(){$("sheet").hidden=true}
+
+// 재방문 측정: 기기 안에만 첫 방문일·마지막 방문일·방문일수를 저장하고, 하루 한 번 익명 이벤트만 보냄
+function retention(){
+  const today=kst().ymd,first=store("duri-first"),last=store("duri-last");
+  if(last===today)return;
+  const n=(+(store("duri-days")||0))+1;store("duri-days",String(n));store("duri-last",today);
+  if(!first){store("duri-first",today);track("방문/첫방문","첫 방문");return}
+  const gap=Math.round((Date.parse(today)-Date.parse(first))/864e5);
+  track("방문/재방문","재방문");
+  track("재방문/첫방문후 "+(gap<=1?"1일":gap<=7?"2~7일":gap<=30?"8~30일":"31일 이상"),"첫 방문 후 경과");
+  track("방문일수/"+(n<=2?"2일":n<=4?"3~4일":n<=9?"5~9일":"10일 이상"),"누적 방문일수");
+}
 function render(){
   const now=kst();const ymd=peekDate||now.ymd;const isToday=ymd===now.ymd;const info=dayInfo(ymd);
   const nowMin=isToday&&!info.off?now.min:-1;
@@ -332,7 +344,7 @@ render();
 try{navigator.permissions&&navigator.permissions.query({name:"geolocation"}).then(r=>{if(r.state==="granted")locate(false)}).catch(()=>{})}catch(e){}
 setInterval(()=>{if(!peekDate)render()},20000);
 window.addEventListener("appinstalled",()=>track("설치","앱 설치"));
-window.addEventListener("load",()=>setTimeout(()=>{track("시작/"+(matchMedia("(display-mode: standalone)").matches||navigator.standalone?"설치앱":"브라우저"),"실행 방식");track("시작정류장/"+stop,"처음 보이는 정류장")},1500));
+window.addEventListener("load",()=>setTimeout(()=>{retention();track("시작/"+(matchMedia("(display-mode: standalone)").matches||navigator.standalone?"설치앱":"브라우저"),"실행 방식");track("시작정류장/"+stop,"처음 보이는 정류장")},1500));
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>
