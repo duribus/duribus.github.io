@@ -267,15 +267,16 @@ function left(m){return m<=0?"곧 도착":m<60?`${m}분 후`:`${Math.floor(m/60)
 function dist(a,b){const R=6371e3,r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
 let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
 function locate(manual){
-  if(!navigator.geolocation){if(manual)toast("이 브라우저에서는 위치를 쓸 수 없어요.");return}
+  if(manual)track("위치/클릭","현재 위치 버튼 클릭");
+  if(!navigator.geolocation){if(manual){toast("이 브라우저에서는 위치를 쓸 수 없어요.");track("위치/실패/미지원","위치 실패")}return}
   const b=$("loc");if(b)b.setAttribute("aria-busy","true");
   navigator.geolocation.getCurrentPosition(p=>{
     const me=[p.coords.latitude,p.coords.longitude];lastMe=me;if(myDot)myDot.setLatLng(me).addTo(map);
     let best=null,bd=1e9;for(const k of PICK){const d=dist(me,GEO[k]);if(d<bd){bd=d;best=k}}
-    if(bd>1500){nearNote="";if(manual)toast("캠퍼스에서 멀리 있어요. 정류장을 직접 골라주세요.");render();return}
+    if(bd>1500){nearNote="";if(manual){toast("캠퍼스에서 멀리 있어요. 정류장을 직접 골라주세요.");track("위치/실패/캠퍼스밖","위치 실패")}render();return}
     stop=best;dir=null;if(dest===stop){dest="";store("duri-dest","")}store("duri-stop",stop);nearNote=bd<15?"현재 위치 바로 앞 정류장":`현재 위치에서 가장 가까운 정류장 · 약 ${bd<100?Math.round(bd/10)*10:Math.round(bd/50)*50}m`;
     track("위치/"+(manual?"버튼":"자동")+"/"+best,"가까운 정류장");render();
-  },e=>{if(manual)toast(e.code===1?"위치 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.":"위치를 찾지 못했어요. 잠시 후 다시 눌러주세요.");render()},{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
+  },e=>{if(manual){toast(e.code===1?"위치 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.":"위치를 찾지 못했어요. 잠시 후 다시 눌러주세요.");track("위치/실패/"+(e.code===1?"권한거부":e.code===3?"시간초과":"오류"),"위치 실패")}render()},{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
 }
 
 const LBL={"글로벌경영관":"bottom","경영대2호관":"top","미래광장":"left","의생대":"right","미래도서관":"right","동생대2호관":"top","백록관":"left","새롬관":"bottom"};
