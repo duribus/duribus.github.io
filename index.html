@@ -461,7 +461,7 @@ try{navigator.permissions&&navigator.permissions.query({name:"geolocation"}).the
 setInterval(()=>{if(!peekDate)render()},20000);
 window.addEventListener("appinstalled",()=>track("설치","앱 설치"));
 window.addEventListener("load",()=>setTimeout(()=>{retention();track("시작/"+(matchMedia("(display-mode: standalone)").matches||navigator.standalone?"설치앱":"브라우저"),"실행 방식");track("시작정류장/"+stop,"처음 보이는 정류장")},1500));
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});let reloaded=false;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloaded||!navigator.serviceWorker.controller)return;reloaded=true;location.reload()})}
 }
 </script>
 </body>
