@@ -29,7 +29,7 @@
 
 ## 데이터
 
-- 출처: [강원대학교 교통안내 페이지](https://www.kangwon.ac.kr/ko/conts/198/web.do)
+- 출처: [강원대학교 교통안내 페이지](https://www.kangwon.ac.kr/ko/conts/198/web.do), 학생과 공문(정리: [docs/official-notice-2026-2.md](docs/official-notice-2026-2.md))
 - 현재 반영: 2026학년도 2학기 (2026. 9. 1. ~ 12. 21., 월~금 하루 10회)
 - 학교 페이지를 매주 확인해 시간표가 바뀌면 이 저장소의 `index.html`을 업데이트합니다.
 - 실제 운행은 교통 상황에 따라 달라질 수 있으며, 정확한 정보는 학교 공지를 우선합니다.
