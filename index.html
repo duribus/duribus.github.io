@@ -120,6 +120,24 @@ h2{font-size:15px;font-weight:700;margin:6px 0 8px;color:var(--mute)}
 .fb button,.fb a{min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 14px inherit;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none}
 .fb a{margin-top:8px;border:0;background:none;color:var(--accent);min-height:36px;justify-content:flex-start;padding:0;text-decoration:underline;text-underline-offset:3px}
 .fb .thx{color:var(--mute);font-size:14px;font-weight:400;margin:0}
+.inst{display:flex;align-items:center;gap:10px;margin:10px 18px 0;padding:10px 10px 10px 14px;background:var(--soft);border-radius:14px}
+.inst[hidden]{display:none}
+.inst img{width:36px;height:36px;border-radius:9px;flex:none}
+.inst div{flex:1;min-width:0;font-size:13.5px;line-height:1.4}.inst b{display:block;font-size:14.5px}
+.inst .go{flex:none;min-height:38px;padding:0 14px;border:0;border-radius:10px;background:var(--blue);color:#fff;font:700 13.5px inherit;font-family:inherit;cursor:pointer}
+.inst .x{flex:none;width:32px;min-height:38px;border:0;background:none;color:var(--mute);font-size:18px;cursor:pointer}
+.how{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;background:rgba(5,15,30,.45)}
+.how[hidden]{display:none}
+.how .box{width:100%;max-width:480px;background:var(--card);border-radius:18px 18px 0 0;padding:20px 20px calc(18px + var(--sab))}
+.how h3{margin:0 0 4px;font-size:18px}.how .sub2{margin:0 0 14px;color:var(--mute);font-size:13.5px}
+.how ol{margin:0;padding:0;list-style:none;counter-reset:s}
+.how li{counter-increment:s;display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+.how li::before{content:counter(s);flex:none;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.how li svg{width:18px;height:18px;vertical-align:-3px;color:var(--accent)}
+.how .close{width:100%;min-height:46px;margin-top:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:700 15px inherit;font-family:inherit;cursor:pointer}
+.how .tabs2{display:flex;gap:6px;margin-bottom:6px}
+.how .tabs2 button{min-height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--mute);font:600 13px inherit;font-family:inherit;cursor:pointer}
+.how .tabs2 button[aria-pressed=true]{border-color:var(--blue);color:var(--accent);background:var(--soft)}
 .toast{position:fixed;left:50%;bottom:calc(80px + var(--sab));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:14px;padding:10px 14px;border-radius:10px;max-width:90vw;z-index:9}
 .toast[hidden]{display:none}
 footer{padding:14px 18px 20px;font-size:12px;color:var(--mute);line-height:1.6}footer a{color:inherit}
@@ -148,6 +166,21 @@ nav.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;
   <div class="sheethead"><b id="sheetTitle">출발 정류장 선택</b><button type="button" id="sheetClose">닫기</button></div>
   <div id="map"></div>
   <p class="maphint" id="mapHint">지도에서 정류장을 눌러 선택하세요</p>
+</div>
+<div class="inst" id="inst" hidden>
+  <img src="icon-192.png" alt="">
+  <div><b>앱으로 설치하기</b>홈 화면에서 바로 열 수 있어요</div>
+  <button class="go" id="instGo" type="button">설치</button>
+  <button class="x" id="instX" type="button" aria-label="설치 안내 닫기">×</button>
+</div>
+<div class="how" id="how" role="dialog" aria-modal="true" aria-labelledby="howTitle" hidden>
+  <div class="box">
+    <h3 id="howTitle">홈 화면에 추가하기</h3>
+    <p class="sub2" id="howSub">설치나 로그인 없이, 앱처럼 바로 열려요</p>
+    <div class="tabs2" id="howTabs"><button type="button" data-os="ios">아이폰</button><button type="button" data-os="android">안드로이드</button><button type="button" data-os="inapp">카톡·인스타에서 열었을 때</button></div>
+    <ol id="howSteps"></ol>
+    <button class="close" id="howClose" type="button">확인</button>
+  </div>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -182,6 +215,7 @@ nav.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;
 <footer>
   2026학년도 2학기 교내 순환버스(두리버스) · 월~금 10회 · 9/1~12/21 운행 · 토·일·공휴일·공식휴강일 미운행.<br>
   시간표는 <a href="https://www.kangwon.ac.kr/ko/conts/198/web.do">강원대 교통안내 페이지</a>에서 2026-11-25에 가져온 내용입니다. 학교 공지로 바뀔 수 있어요.<br>
+  <a href="#" id="howLink">앱으로 설치하는 방법</a><br>
   익명 사용 통계(방문 수, 많이 고른 정류장 등)를 수집해요. 이름·연락처 같은 개인정보와 쿠키는 저장하지 않아요. 위치는 가까운 정류장 계산에만 쓰고 저장하거나 보내지 않아요.
 </footer>
 
@@ -277,6 +311,21 @@ function retention(){
   track("재방문/첫방문후 "+(gap<=1?"1일":gap<=7?"2~7일":gap<=30?"8~30일":"31일 이상"),"첫 방문 후 경과");
   track("방문일수/"+(n<=2?"2일":n<=4?"3~4일":n<=9?"5~9일":"10일 이상"),"누적 방문일수");
 }
+
+// 앱 설치 안내
+const UA=navigator.userAgent||"";
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=/iPhone|iPad|iPod/.test(UA)||(/Macintosh/.test(UA)&&navigator.maxTouchPoints>1);
+const isInApp=/KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\//i.test(UA);
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;showInst()});
+const STEPS={
+  ios:["<b>Safari</b>로 이 페이지를 열어요","아래쪽 <b>공유</b> 버튼 <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3v12M8 7l4-4 4 4'/><path d='M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7'/></svg> 을 눌러요","목록을 내려 <b>홈 화면에 추가</b>를 누르고 <b>추가</b>"],
+  android:["<b>크롬</b>으로 이 페이지를 열어요","오른쪽 위 <b>⋮</b> 메뉴를 눌러요","<b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르면 끝"],
+  inapp:["카톡·인스타 안에서는 설치가 안 돼요","오른쪽 위(또는 아래) <b>⋯</b> 메뉴에서 <b>다른 브라우저로 열기</b>","열린 브라우저에서 아이폰·안드로이드 방법대로 추가해요"]};
+function howOS(os){$("howSteps").innerHTML=STEPS[os].map(x=>`<li><span>${x}</span></li>`).join("");document.querySelectorAll("#howTabs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.os===os))}
+function openHow(from){howOS(isInApp?"inapp":isIOS?"ios":"android");$("how").hidden=false;track("설치안내/열기/"+from,"설치 안내 열기")}
+function showInst(){if(isStandalone())return;const until=+(store("duri-inst-hide")||0);if(Date.now()<until)return;$("inst").hidden=false}
 function render(){
   const now=kst();const ymd=peekDate||now.ymd;const isToday=ymd===now.ymd;const info=dayInfo(ymd);
   const nowMin=isToday&&!info.off?now.min:-1;
@@ -326,7 +375,14 @@ function render(){
 function setStop(v){nearNote="";stop=v;dir=null;if(dest===stop){dest="";store("duri-dest","")}store("duri-stop",stop);track("정류장/"+stop,"정류장 선택");render()}
 document.querySelector(".plan").addEventListener("click",e=>{const b=e.target.closest(".mapbtn");if(b)openMap(b.dataset.map)});
 $("sheetClose").addEventListener("click",closeMap);
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("sheet").hidden)closeMap()});
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("sheet").hidden)closeMap();$("how").hidden=true});
+$("instGo").addEventListener("click",async()=>{if(deferredPrompt&&!isInApp){deferredPrompt.prompt();const r=await deferredPrompt.userChoice;track("설치/프롬프트/"+(r&&r.outcome==="accepted"?"수락":"거절"),"설치 프롬프트");deferredPrompt=null;if(r&&r.outcome==="accepted")$("inst").hidden=true}else openHow("배너")});
+$("instX").addEventListener("click",()=>{$("inst").hidden=true;store("duri-inst-hide",String(Date.now()+7*864e5));track("설치안내/닫기","설치 배너 닫기")});
+$("howLink").addEventListener("click",e=>{e.preventDefault();openHow("하단")});
+$("howClose").addEventListener("click",()=>{$("how").hidden=true});
+$("how").addEventListener("click",e=>{if(e.target.id==="how")$("how").hidden=true});
+$("howTabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)howOS(b.dataset.os)});
+setTimeout(showInst,1200);
 $("from").addEventListener("change",e=>setStop(e.target.value));
 $("next").addEventListener("click",e=>{if(e.target.closest(".loc"))locate(true)});
 $("swap").addEventListener("click",()=>{if(!dest)return;const a=stop;stop=dest;dest=a;nearNote="";dir=null;store("duri-stop",stop);store("duri-dest",dest);track("출발도착바꾸기","출발·도착 바꾸기");render()});
