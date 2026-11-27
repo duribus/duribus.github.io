@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#86ccec">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="두리버스">
+<title>오늘의 두리버스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+/* VOICE: 실제 교통앱처럼 담백하게. 장식보다 정보, 말은 짧게
+   IDEA: 캠퍼스 버스 정류장 표지판 — 정류장 이름이 제일 크고, 그 아래 다음 버스
+   PICTURE: 하늘색 띠 위 정류장명과 큰 파란 시각, 노선 탭은 하늘색 선 위 파란 버스 아이콘
+   COLOUR+TYPE: 곰두리 하늘 #86CCEC·파랑 #295DA8·흰색, 평면 + 1px 선 / Pretendard
+   LAYOUT: 480px 한 열, 표지판 → 정류장 선택 줄 → 탭 내용 → 의견, 하단 탭바 */
+:root{color-scheme:light dark;
+--sky:#86ccec;--blue:#295da8;
+--bg:light-dark(#f5f8fb,#0b1522);--ink:light-dark(#111c2d,#e8eef6);--mute:light-dark(#6b7a8f,#8e9db1);
+--line:light-dark(#e3e9f0,#1e2c3f);--card:light-dark(#fff,#121f31);--soft:light-dark(#eaf6fc,#16304c);
+--head:light-dark(#86ccec,#16365c);--headink:light-dark(#0c2547,#eef6ff);--accent:light-dark(#295da8,#8fd0ef);
+--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;letter-spacing:-.01em;word-break:keep-all;overflow-x:clip}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);padding-bottom:calc(68px + var(--sab))}
+@media(min-width:520px){body{background:light-dark(#e6ecf2,#060c14)}.app{border-inline:1px solid var(--line)}}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+header{background:var(--head);color:var(--headink);padding:calc(12px + var(--sat)) 18px 18px}
+.top{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.brand{font-weight:800;letter-spacing:-.02em}
+.date{opacity:.75;flex:1}
+.pill{padding:3px 8px;border-radius:6px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.pill.on{background:var(--blue);color:#fff}.pill.off{background:light-dark(rgba(12,37,71,.12),rgba(255,255,255,.12));color:var(--headink)}
+.next{margin-top:14px;background:var(--card);color:var(--ink);border-radius:14px;padding:16px 16px 0}
+.stopname{display:flex;align-items:center;gap:8px;font-size:22px;font-weight:800;letter-spacing:-.03em}
+.stopname svg{width:26px;height:26px;flex:none}
+.stopname small{font-size:14px;font-weight:500;color:var(--mute)}
+.near{font-size:13px;color:var(--accent);margin:2px 0 0 34px}
+.row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:12px}
+.big{font-size:clamp(46px,15vw,72px);line-height:.95;font-weight:800;color:var(--accent);white-space:nowrap}
+.big.msg{font-size:28px;line-height:1.2;color:var(--ink)}
+.cd{text-align:right;flex:0 1 auto;max-width:48%;padding-bottom:4px}.cd b{display:block;font-size:20px;font-weight:800;color:var(--ink)}.cd span{display:block;color:var(--mute);font-size:13px}
+.sub{color:var(--mute);font-size:14px;margin:14px -16px 0;padding:11px 16px;border-top:1px solid var(--line)}
+.sub b{color:var(--ink);font-weight:600}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.view{padding:12px 18px 8px}.view[hidden]{display:none}
+h2{font-size:15px;font-weight:700;margin:6px 0 8px;color:var(--mute)}
+.note{color:var(--mute);font-size:13px;margin:10px 0 0}
+.list{list-style:none;margin:0;padding:0;background:var(--card);border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.list li{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding:8px 16px;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.list .t{font-size:22px;font-weight:700;white-space:nowrap}
+.list .r{font-size:13px;color:var(--mute);text-align:right}
+.list .r b{display:block;color:var(--ink);font-size:14px;font-weight:600}
+.list li.past{opacity:.35}.list li.past .t{text-decoration:line-through}
+.list li.nx .t,.list li.nx .r b{color:var(--accent)}
+.list li.nx{background:var(--soft)}
+
+.plan{margin:14px 18px 2px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:4px 6px 4px 4px;display:flex;align-items:center;gap:4px}
+.prows{flex:1;min-width:0}
+.prow{display:flex;align-items:center;gap:8px;padding:4px 0 4px 8px;min-height:52px}
+.prow+.prow{border-top:1px solid var(--line)}
+.pdot{flex:none;width:10px;height:10px;border-radius:50%}
+.pdot.from{background:var(--blue)}.pdot.to{border:2.5px solid var(--blue)}
+.prow label{flex:none;white-space:nowrap;width:2.4em;font-weight:700;font-size:14px;color:var(--mute)}
+.prow select{flex:1;min-width:0;min-height:42px;border:0;border-radius:10px;background:var(--soft);color:var(--ink);font:700 15.5px inherit;font-family:inherit;padding:0 10px;text-overflow:ellipsis}
+.mapbtn,.swap{flex:none;width:42px;min-height:42px;border-radius:10px;border:0;background:none;color:var(--mute);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mapbtn{color:var(--accent)}
+.mapbtn svg,.swap svg{width:20px;height:20px}
+.swap{border-left:1px solid var(--line);border-radius:0;min-height:88px}
+.swap:disabled{opacity:.3;cursor:default}
+.stopname .loc{margin-left:auto;flex:none;display:flex;align-items:center;gap:4px;min-height:36px;padding:0 10px;border-radius:18px;border:1px solid light-dark(#bfe2f3,#24486e);background:var(--soft);color:var(--accent);font:600 12.5px inherit;font-family:inherit;letter-spacing:0;cursor:pointer}
+.stopname .loc svg{width:16px;height:16px}
+.stopname .loc[aria-busy=true]{opacity:.55}
+.sheet{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;background:var(--card);max-width:480px;margin:0 auto}
+.sheet[hidden]{display:none}
+.sheethead{display:flex;align-items:center;justify-content:space-between;padding:calc(10px + var(--sat)) 12px 10px 18px;border-bottom:1px solid var(--line);font-size:16px}
+.sheethead button{min-height:42px;padding:0 12px;border:0;background:none;color:var(--accent);font:600 15px inherit;font-family:inherit;cursor:pointer}
+#map{flex:1;min-height:0;background:var(--soft)}
+.maphint{margin:0;padding:12px 18px calc(12px + var(--sab));font-size:13.5px;color:var(--mute);border-top:1px solid var(--line)}
+.stoplabel{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:2px 7px;font:700 12.5px "Pretendard Variable",Pretendard,sans-serif;box-shadow:none}
+.stoplabel.sel{background:var(--blue);color:#fff;border-color:var(--blue)}
+.stoplabel.selto{background:var(--sky);color:#0c2547;border-color:var(--blue)}
+.leaflet-tooltip-bottom.stoplabel::before,.leaflet-tooltip-left.stoplabel::before,.leaflet-tooltip-right.stoplabel::before{display:none}
+.leaflet-tooltip-top.stoplabel::before{display:none}
+.dirs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 0 10px}.dirs::-webkit-scrollbar{display:none}
+.dir{flex:none;white-space:nowrap;min-height:38px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--mute);font:600 13.5px inherit;font-family:inherit;cursor:pointer}
+.dir[aria-pressed=true]{border-color:var(--blue);color:var(--accent);background:var(--soft)}
+.onedir{font-size:13px;color:var(--mute);margin:0 0 10px}
+.toggle{width:100%;min-height:42px;margin-bottom:8px;border:0;border-radius:10px;background:none;color:var(--mute);font:14px inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.line{list-style:none;margin:0;padding:6px 0;background:var(--card);border-radius:14px;border:1px solid var(--line)}
+.line li{position:relative;display:flex;align-items:center;gap:14px;min-height:50px;padding:6px 16px 6px 56px}
+.line li::before{content:"";position:absolute;left:31px;top:0;bottom:0;width:4px;background:var(--sky)}
+.line li:first-child::before{top:50%}.line li:last-child::before{bottom:50%}
+.line li.gone::before{background:var(--line)}
+.line .dot{position:absolute;left:26px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:var(--card);border:3px solid var(--sky)}
+.line .nm{flex:1;font-size:15.5px}
+.line .tm{font-size:16px;font-weight:600;white-space:nowrap;color:var(--mute)}
+.line li.sel .nm{font-weight:800}.line li.sel .tm{color:var(--ink)}.line li.sel .dot{border-color:var(--blue)}
+.line li.gone{color:var(--mute)}.line li.gone .dot{border-color:var(--line)}
+.line li.bus .dot{left:20px;width:26px;height:26px;margin-top:-13px;border-radius:7px;border:0;background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='3' width='14' height='15' rx='2'/%3E%3Cpath d='M5 11h14M8 21v-3M16 21v-3'/%3E%3Ccircle cx='8.5' cy='14.5' r='.5'/%3E%3Ccircle cx='15.5' cy='14.5' r='.5'/%3E%3C/svg%3E") center/16px no-repeat}
+.line li.bus .nm::after{content:"운행 중";font-size:12px;font-weight:700;color:var(--accent);margin-left:8px}
+.runs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.runs::-webkit-scrollbar{display:none}
+.run{flex:none;min-width:62px;min-height:50px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--mute);font:500 12.5px inherit;font-family:inherit;cursor:pointer;line-height:1.25}
+.run b{display:block;font-size:16px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.run[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}.run[aria-pressed=true] b{color:var(--bg)}
+.run.done{opacity:.45}
+.peek{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.peek input{flex:1;min-height:44px;font:16px inherit;font-family:inherit;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.peek button{min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px inherit;font-family:inherit;cursor:pointer}
+.fb{margin:12px 18px 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);border-radius:14px}
+.fb p{margin:0 0 10px;font-weight:600;font-size:14.5px}
+.fb .btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.fb button,.fb a{min-height:42px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 14px inherit;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;text-decoration:none}
+.fb a{margin-top:8px;border:0;background:none;color:var(--accent);min-height:36px;justify-content:flex-start;padding:0;text-decoration:underline;text-underline-offset:3px}
+.fb .thx{color:var(--mute);font-size:14px;font-weight:400;margin:0}
+.toast{position:fixed;left:50%;bottom:calc(80px + var(--sab));transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:14px;padding:10px 14px;border-radius:10px;max-width:90vw;z-index:9}
+.toast[hidden]{display:none}
+footer{padding:14px 18px 20px;font-size:12px;color:var(--mute);line-height:1.6}footer a{color:inherit}
+nav.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:480px;display:grid;grid-template-columns:repeat(3,1fr);background:var(--card);border-top:1px solid var(--line);padding-bottom:var(--sab);z-index:5}
+.tab{min-height:58px;border:0;background:none;color:var(--mute);font:600 11.5px inherit;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-selected=true]{color:var(--ink)}
+</style>
+<script data-goatcounter="https://duribus.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="top"><h1 class="brand" style="font-size:inherit;margin:0">오늘의 두리버스</h1><span class="date" id="date"></span><span class="pill" id="status"></span></div>
+  <div class="next" id="next"></div>
+</header>
+
+<div class="plan" role="group" aria-label="출발·도착">
+  <div class="prows">
+    <div class="prow"><span class="pdot from" aria-hidden="true"></span><label for="from">출발</label><select id="from"></select><button class="mapbtn" type="button" data-map="from" aria-label="지도에서 출발 정류장 선택"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></button></div>
+    <div class="prow"><span class="pdot to" aria-hidden="true"></span><label for="dest">도착</label><select id="dest"></select><button class="mapbtn" type="button" data-map="to" aria-label="지도에서 도착 정류장 선택"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></button></div>
+  </div>
+  <button class="swap" id="swap" type="button" aria-label="출발과 도착 바꾸기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></svg></button>
+</div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheethead"><b id="sheetTitle">출발 정류장 선택</b><button type="button" id="sheetClose">닫기</button></div>
+  <div id="map"></div>
+  <p class="maphint" id="mapHint">지도에서 정류장을 눌러 선택하세요</p>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<main>
+  <section class="view" id="v-home">
+    <h2 id="listTitle">오늘 시간</h2>
+    <button class="toggle" id="showPast" type="button" hidden></button>
+    <ul class="list" id="times"></ul>
+  </section>
+
+  <section class="view" id="v-route" hidden>
+    <h2 id="routeTitle">노선</h2>
+    <ul class="line" id="route"></ul>
+    <p class="note">정류장 사이 약 2분 · 버스 위치는 시간표로 계산한 추정이에요 · 함인섭광장 정류소는 운행하지 않음</p>
+  </section>
+
+  <section class="view" id="v-table" hidden>
+    <div class="peek"><input type="date" id="peek" min="2026-09-01" max="2027-12-31" aria-label="날짜 선택"><button id="reset" type="button">오늘</button></div>
+    <h2 id="tableTitle">회차별 시간표</h2>
+    <div class="runs" id="runs" role="group" aria-label="회차 선택"></div>
+    <ul class="line" id="runLine"></ul>
+  </section>
+</main>
+
+<section class="fb" aria-label="의견">
+  <div id="fbAsk"><p>오늘 시간표가 실제와 맞았나요?</p>
+  <div class="btns"><button type="button" data-fb="맞았어요">맞았어요</button><button type="button" data-fb="달랐어요">달랐어요</button></div></div>
+  <p class="thx" id="fbThx" hidden>고마워요! 더 알려줄 게 있으면 의견을 남겨주세요.</p>
+  <a id="fbForm" href="https://docs.google.com/forms/d/e/1FAIpQLScm7nrQe8Pg1UzVQKzkVgWNjZb23Fvd4CsVZjvkJPfy_AlasQ/viewform" target="_blank" rel="noopener">불편한 점이나 바라는 기능 보내기</a>
+</section>
+
+<footer>
+  2026학년도 2학기 교내 순환버스(두리버스) · 월~금 10회 · 9/1~12/21 운행 · 토·일·공휴일·공식휴강일 미운행.<br>
+  시간표는 <a href="https://www.kangwon.ac.kr/ko/conts/198/web.do">강원대 교통안내 페이지</a>에서 2026-11-25에 가져온 내용입니다. 학교 공지로 바뀔 수 있어요.<br>
+  익명 사용 통계(방문 수, 많이 고른 정류장 등)를 수집해요. 이름·연락처 같은 개인정보와 쿠키는 저장하지 않아요. 위치는 가까운 정류장 계산에만 쓰고 저장하거나 보내지 않아요.
+</footer>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" data-v="home" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>다음 버스</button>
+  <button class="tab" role="tab" data-v="route" type="button"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><path d="M6 7v4a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4"/></svg>노선</button>
+  <button class="tab" role="tab" data-v="table" type="button"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>시간표</button>
+</nav>
+</div>
+
+<script>
+{
+const STOPS=["새롬관","미래도서관","동생대2호관","경영대2호관","미래광장","백록관","새롬관","미래광장","글로벌경영관","의생대","미래도서관","새롬관"];
+const DEPS=["8:30","9:00","9:30","10:00","11:00","14:00","15:00","16:00","17:00","18:00"].map(s=>{const[h,m]=s.split(":");return +h*60+ +m});
+const PICK=["새롬관","미래도서관","동생대2호관","경영대2호관","미래광장","백록관","글로벌경영관","의생대"];
+// 정류장 대략 위치(건물 좌표 기준)
+const GEO={"새롬관":[37.86590,127.74370],"미래도서관":[37.86539,127.74842],"동생대2호관":[37.86871,127.74977],"경영대2호관":[37.86998,127.74628],"미래광장":[37.87081,127.74349],"백록관":[37.86854,127.74078],"글로벌경영관":[37.86938,127.74563],"의생대":[37.86726,127.74915]};
+const START="2026-09-01",END="2026-12-21";
+const OFF={"2026-09-24":"추석 연휴","2026-09-25":"추석","2026-10-05":"개천절 대체공휴일","2026-10-09":"한글날","2026-11-28":"공식휴강일(수시면접)","2026-12-25":"성탄절"};
+const WD="일월화수목금토";
+const $=id=>document.getElementById(id);
+const fmt=m=>`${Math.floor(m/60)}:${String(m%60).padStart(2,"0")}`;
+const stName=i=>i===6?"새롬관 (회차)":i===11?"새롬관 (도착)":STOPS[i];
+const store=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+let stop=PICK.includes(store("duri-stop"))?store("duri-stop"):"새롬관";
+let view=["home","route","table"].includes(store("duri-view"))?store("duri-view"):"home";
+let lastMe=null,map=null,myDot=null,mapMode="from",marks={};
+let peekDate=null,pickedRun=null,showPast=false,nearNote="",dir=null;
+let dest=PICK.includes(store("duri-dest"))?store("duri-dest"):"";if(dest===stop)dest="";
+const track=(path,title)=>{try{if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path,title,event:true})}catch(e){}};
+
+function kst(){const d=new Date(Date.now()+9*3600e3);return{ymd:d.toISOString().slice(0,10),min:d.getUTCHours()*60+d.getUTCMinutes()}}
+function dayInfo(ymd){const[y,mo,da]=ymd.split("-").map(Number);const dow=new Date(Date.UTC(y,mo-1,da)).getUTCDay();
+  let off=null;if(ymd<START||ymd>END)off=ymd>END?"학기 종료 (방학 미운행)":"학기 시작 전";else if(dow===0||dow===6)off="주말 미운행";else if(OFF[ymd])off=OFF[ymd]+" 미운행";
+  return{off,label:`${mo}월 ${da}일 (${WD[dow]})`}}
+const DIRNAME=i=>i>=10?"새롬관(종점) 방면":STOPS[i+1]+(i+2<=11&&i+2!==11?"·"+STOPS[i+2]:"")+" 방면";
+const dirsOf=name=>[...new Set(STOPS.map((s,i)=>s===name&&i<11?i:-1).filter(i=>i>=0))];
+function trips(name){
+  if(dest){const out=[];DEPS.forEach((d,r)=>{let best=null;STOPS.forEach((s,i)=>{if(s!==name||i>=11)return;let arr=null,via=false;
+      for(let j=i+1;j<=11;j++)if(STOPS[j]===dest){arr=d+j*2;break}
+      if(arr===null&&r+1<DEPS.length)for(let j=1;j<=11;j++)if(STOPS[j]===dest){arr=DEPS[r+1]+j*2;via=true;break}
+      if(arr!==null&&(!best||arr<best.arr||(arr===best.arr&&i>best.i)))best={i,arr,via}});
+    if(best)out.push({t:d+best.i*2,r:r+1,i:best.i,arr:best.arr,via:best.via})});return out.sort((a,b)=>a.t-b.t)}
+  const all=stopTimes(name);return dir===null?all:all.filter(x=>x.i===dir)}
+function stopTimes(name){const out=[];DEPS.forEach((d,r)=>STOPS.forEach((s,i)=>{if(s===name&&i<11)out.push({t:d+i*2,r:r+1,i})}));return out.sort((a,b)=>a.t-b.t)}
+function left(m){return m<=0?"곧 도착":m<60?`${m}분 후`:`${Math.floor(m/60)}시간 ${m%60}분 후`}
+
+
+function dist(a,b){const R=6371e3,r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+function locate(manual){
+  if(!navigator.geolocation){if(manual)toast("이 브라우저에서는 위치를 쓸 수 없어요.");return}
+  const b=$("loc");if(b)b.setAttribute("aria-busy","true");
+  navigator.geolocation.getCurrentPosition(p=>{
+    const me=[p.coords.latitude,p.coords.longitude];lastMe=me;if(myDot)myDot.setLatLng(me).addTo(map);
+    let best=null,bd=1e9;for(const k of PICK){const d=dist(me,GEO[k]);if(d<bd){bd=d;best=k}}
+    if(bd>1500){nearNote="";if(manual)toast("캠퍼스에서 멀리 있어요. 정류장을 직접 골라주세요.");render();return}
+    stop=best;dir=null;if(dest===stop){dest="";store("duri-dest","")}store("duri-stop",stop);nearNote=bd<15?"현재 위치 바로 앞 정류장":`현재 위치에서 가장 가까운 정류장 · 약 ${bd<100?Math.round(bd/10)*10:Math.round(bd/50)*50}m`;
+    track("위치/"+(manual?"버튼":"자동")+"/"+best,"가까운 정류장");render();
+  },e=>{if(manual)toast(e.code===1?"위치 권한이 꺼져 있어요. 브라우저 설정에서 허용해주세요.":"위치를 찾지 못했어요. 잠시 후 다시 눌러주세요.");render()},{enableHighAccuracy:true,timeout:8000,maximumAge:60000});
+}
+
+const LBL={"글로벌경영관":"bottom","경영대2호관":"top","미래광장":"left","의생대":"right","미래도서관":"right","동생대2호관":"top","백록관":"left","새롬관":"bottom"};
+function loadLeaflet(){return new Promise((ok,no)=>{if(window.L)return ok();const c=document.createElement("link");c.rel="stylesheet";c.href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";document.head.appendChild(c);const j=document.createElement("script");j.src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";j.onload=ok;j.onerror=no;document.head.appendChild(j)})}
+function paintMarks(){for(const k of PICK){const m=marks[k];if(!m)continue;const isF=k===stop,isT=k===dest;const el=m.getTooltip()&&m.getTooltip().getElement();if(el){el.classList.toggle("sel",isF);el.classList.toggle("selto",isT);el.textContent=(isF?"출발 · ":isT?"도착 · ":"")+k}m.setStyle({fillColor:isF?"#295da8":isT?"#86ccec":"#fff",color:"#295da8",weight:3,radius:isF||isT?10:8,fillOpacity:1})}}
+async function openMap(mode){
+  mapMode=mode;$("sheetTitle").textContent=mode==="from"?"출발 정류장 선택":"도착 정류장 선택";$("sheet").hidden=false;track("지도열기/"+mode,"지도에서 선택");
+  try{await loadLeaflet()}catch(e){$("mapHint").textContent="지도를 불러오지 못했어요. 인터넷 연결을 확인해주세요.";return}
+  if(!map){map=L.map("map",{zoomControl:false,attributionControl:true}).setView([37.8684,127.7455],16);
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+    L.control.zoom({position:"bottomright"}).addTo(map);
+    for(const k of PICK){const m=L.circleMarker(GEO[k],{radius:8}).addTo(map);const dirn=LBL[k]||"top";m.bindTooltip(k,{permanent:true,direction:dirn,offset:dirn==="top"?[0,-8]:dirn==="bottom"?[0,8]:dirn==="right"?[8,0]:[-8,0],className:"stoplabel",interactive:true});const pick=()=>chooseOnMap(k);m.on("click",pick);m.getTooltip().on("click",pick);marks[k]=m;
+      m.on("tooltipopen",paintMarks)}
+    myDot=L.circleMarker([0,0],{radius:7,color:"#fff",weight:3,fillColor:"#86ccec",fillOpacity:1});if(lastMe)myDot.setLatLng(lastMe).addTo(map);
+    map.fitBounds(L.latLngBounds(PICK.map(k=>GEO[k])),{padding:[40,40]})}
+  setTimeout(()=>{map.invalidateSize();paintMarks()},60);
+  $("mapHint").textContent=(mode==="to"&&dest?"현재 도착: "+dest+" · ":mode==="from"?"현재 출발: "+stop+" · ":"")+"정류장을 눌러 선택하세요";
+}
+function chooseOnMap(k){
+  if(mapMode==="from"){if(k!==stop)setStop(k)}else{if(k===stop){$("mapHint").textContent="출발과 같은 정류장이에요. 다른 곳을 골라주세요.";return}dest=k;dir=null;store("duri-dest",dest);track("도착지/"+stop+"→"+dest,"도착지 선택");render()}
+  closeMap();
+}
+function closeMap(){$("sheet").hidden=true}
+function render(){
+  const now=kst();const ymd=peekDate||now.ymd;const isToday=ymd===now.ymd;const info=dayInfo(ymd);
+  const nowMin=isToday&&!info.off?now.min:-1;
+  $("date").textContent=(isToday?"오늘 · ":"")+info.label;
+  const st=$("status");st.className="pill "+(info.off?"off":"on");st.textContent=info.off?"미운행":"운행일";
+  const multi=dirsOf(stop).length>1;const times=trips(stop);const nx=info.off?null:times.find(x=>x.t>=nowMin);
+
+  let h=`<div class="stopname"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2" width="16" height="12" rx="3" fill="var(--blue)"/><rect x="11" y="14" width="2" height="8" fill="var(--blue)"/><path d="M8 6h8M8 9.5h8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>${stop}<small>정류장</small><button class="loc" id="loc" type="button" aria-label="현재 위치에서 가까운 정류장을 출발로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>현재 위치</button></div>${nearNote&&!peekDate?`<div class="near">${nearNote}</div>`:""}`;
+  if(!info.off&&!times.length)h+=`<div class="row"><div class="big msg">${dest}까지 가는 버스가 없어요</div></div><div class="sub">도착지를 바꿔보세요</div>`;
+  else if(info.off)h+=`<div class="row"><div class="big msg">오늘은 운행하지 않아요</div></div><div class="sub">${info.off}</div>`;
+  else if(!isToday)h+=`<div class="row"><div class="big num">${fmt(times[0].t)}</div><div class="cd"><b>첫차</b><span>하루 ${times.length}회 정차</span></div></div><div class="sub">막차 <b class="num">${fmt(times[times.length-1].t)}</b></div>`;
+  else if(!nx)h+=`<div class="row"><div class="big msg">오늘 운행이 끝났어요</div></div><div class="sub">막차 <b class="num">${fmt(times[times.length-1].t)}</b> · 다음 운행일에 다시 만나요</div>`;
+  else{const a=times.find(x=>x.t>nx.t);h+=`<div class="row"><div class="big num">${fmt(nx.t)}</div><div class="cd"><b class="num">${left(nx.t-now.min)}</b><span>${multi?DIRNAME(nx.i):nx.r+"회차"}</span></div></div><div class="sub">${dest?`${dest} 도착 <b class="num">${fmt(nx.arr)}</b> · ${nx.arr-nx.t}분 걸려요${nx.via?" · 새롬관에서 다음 회차로 이어져요":""}`:a?`다음 <b class="num">${fmt(a.t)}</b> · ${left(a.t-now.min)}${multi?" · "+DIRNAME(a.i):""}`:"오늘 마지막 버스예요"}</div>`}
+  $("next").innerHTML=h;
+
+  $("from").innerHTML=PICK.map(x=>`<option value="${x}"${x===stop?" selected":""}>${x}</option>`).join("");
+  $("swap").disabled=!dest;
+
+  // 홈
+  $("dest").innerHTML=`<option value="">선택 안 함</option>`+PICK.filter(x=>x!==stop).map(x=>`<option value="${x}"${x===dest?" selected":""}>${x}</option>`).join("");
+  $("listTitle").textContent=(isToday?"오늘 ":info.label+" ")+stop+(dest?" → "+dest:"")+" 시간";
+  const past=times.filter(x=>x.t<nowMin).length;
+  const sp=$("showPast");sp.hidden=info.off||!past||past===times.length;sp.textContent=showPast?"지난 시간 숨기기":`지난 시간 ${past}개 보기`;
+  const shown=info.off?[]:times.filter(x=>showPast||x.t>=nowMin||past===times.length);
+  $("times").innerHTML=info.off?`<li><span>운행하지 않는 날이에요.</span></li>`:shown.map(x=>`<li class="${x.t<nowMin?"past":""}${nx&&x===nx?" nx":""}"><span class="t num">${fmt(x.t)}</span><span class="r"><b>${x.t>=nowMin&&isToday?left(x.t-now.min):""}</b>${dest?`도착 ${fmt(x.arr)} · ${x.arr-x.t}분${x.via?" (새롬관에서 다음 회차)":""}`:multi?DIRNAME(x.i):x.r+"회차"}</span></li>`).join("");
+
+  // 노선: 지금 달리는 회차 또는 다음 회차
+  let busRun=-1,busIdx=-1;
+  if(nowMin>=0)DEPS.forEach((d,r)=>{if(nowMin>=d&&nowMin<d+22){busRun=r;busIdx=Math.min(11,Math.floor((nowMin-d)/2))}});
+  const nextRun=nowMin<0?0:DEPS.findIndex(d=>d>=nowMin);
+  const rr=busRun>=0?busRun:nextRun;
+  $("routeTitle").textContent=info.off?"순환 노선":busRun>=0?`지금 운행 중 · ${busRun+1}회차`:rr>=0?`다음 운행 · ${rr+1}회차 ${fmt(DEPS[rr])} 출발`:"오늘 운행 끝 · 순환 노선";
+  $("route").innerHTML=STOPS.map((s,i)=>{const t=rr>=0&&!info.off?DEPS[rr]+i*2:null;return`<li class="${s===stop?"sel":""}${i===busIdx?" bus":""}${busRun>=0&&i<busIdx?" gone":""}"><span class="dot"></span><span class="nm">${stName(i)}</span>${t!==null?`<span class="tm num">${fmt(t)}</span>`:""}</li>`}).join("");
+
+  // 시간표
+  const def=busRun>=0?busRun:nextRun>=0?nextRun:DEPS.length-1;
+  const run=pickedRun??def;
+  $("tableTitle").textContent=(isToday?"오늘 ":info.label+" ")+"회차별 시간표"+(info.off?" (미운행)":"");
+  $("runs").innerHTML=DEPS.map((d,r)=>`<button class="run${nowMin>=d+22?" done":""}" type="button" data-r="${r}" aria-pressed="${r===run}"><b>${fmt(d)}</b>${r+1}회</button>`).join("");
+  $("runLine").innerHTML=STOPS.map((s,i)=>`<li class="${s===stop?"sel":""}${r2bus(run,i)}"><span class="dot"></span><span class="nm">${stName(i)}</span><span class="tm num">${fmt(DEPS[run]+i*2)}</span></li>`).join("");
+  function r2bus(r,i){return r===busRun&&i===busIdx?" bus":r===busRun&&i<busIdx?" gone":""}
+
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===view));
+  ["home","route","table"].forEach(v=>$("v-"+v).hidden=v!==view);
+  const pr=document.querySelector('.run[aria-pressed="true"]');if(pr)$("runs").scrollLeft=Math.max(0,pr.offsetLeft-$("runs").clientWidth/2+32);
+}
+function setStop(v){nearNote="";stop=v;dir=null;if(dest===stop){dest="";store("duri-dest","")}store("duri-stop",stop);track("정류장/"+stop,"정류장 선택");render()}
+document.querySelector(".plan").addEventListener("click",e=>{const b=e.target.closest(".mapbtn");if(b)openMap(b.dataset.map)});
+$("sheetClose").addEventListener("click",closeMap);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("sheet").hidden)closeMap()});
+$("from").addEventListener("change",e=>setStop(e.target.value));
+$("next").addEventListener("click",e=>{if(e.target.closest(".loc"))locate(true)});
+$("swap").addEventListener("click",()=>{if(!dest)return;const a=stop;stop=dest;dest=a;nearNote="";dir=null;store("duri-stop",stop);store("duri-dest",dest);track("출발도착바꾸기","출발·도착 바꾸기");render()});
+document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;view=b.dataset.v;store("duri-view",view);track("탭/"+view,"탭 이동");render();window.scrollTo(0,0)});
+$("runs").addEventListener("click",e=>{const b=e.target.closest(".run");if(!b)return;pickedRun=+b.dataset.r;track("회차/"+(pickedRun+1),"회차 선택");render()});
+$("dest").addEventListener("change",e=>{dest=e.target.value;dir=null;store("duri-dest",dest);if(dest)track("도착지/"+stop+"→"+dest,"도착지 선택");render()});
+$("showPast").addEventListener("click",()=>{showPast=!showPast;if(showPast)track("지난시간보기","지난 시간 보기");render()});
+$("peek").addEventListener("change",e=>{peekDate=e.target.value||null;pickedRun=null;if(peekDate)track("날짜보기","다른 날짜 보기");render()});
+$("reset").addEventListener("click",()=>{peekDate=null;pickedRun=null;$("peek").value="";render()});
+$("fbForm").addEventListener("click",()=>track("의견폼열기","의견 보내기 클릭"));
+document.querySelector(".fb .btns").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=kst().ymd;track("정확도/"+b.dataset.fb,"시간표 정확도");store("duri-fb",d);fbState();if(b.dataset.fb==="달랐어요")$("fbThx").textContent="알려줘서 고마워요! 어느 정류장·몇 시였는지 의견으로 남겨주면 바로 확인할게요."});
+function fbState(){const done=store("duri-fb")===kst().ymd;$("fbAsk").hidden=done;$("fbThx").hidden=!done}
+fbState();
+render();
+try{navigator.permissions&&navigator.permissions.query({name:"geolocation"}).then(r=>{if(r.state==="granted")locate(false)}).catch(()=>{})}catch(e){}
+setInterval(()=>{if(!peekDate)render()},20000);
+window.addEventListener("appinstalled",()=>track("설치","앱 설치"));
+window.addEventListener("load",()=>setTimeout(()=>{track("시작/"+(matchMedia("(display-mode: standalone)").matches||navigator.standalone?"설치앱":"브라우저"),"실행 방식");track("시작정류장/"+stop,"처음 보이는 정류장")},1500));
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
