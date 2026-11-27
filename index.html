@@ -46,6 +46,8 @@ header{background:var(--head);color:var(--headink);padding:calc(12px + var(--sat
 .big.msg{font-size:28px;line-height:1.2;color:var(--ink)}
 .cd{text-align:right;flex:0 1 auto;max-width:48%;padding-bottom:4px}.cd b{display:block;font-size:20px;font-weight:800;color:var(--ink)}.cd span{display:block;color:var(--mute);font-size:13px}
 .sub{color:var(--mute);font-size:14px;margin:14px -16px 0;padding:11px 16px;border-top:1px solid var(--line)}
+.notice{margin:0 -16px;padding:10px 16px;border-top:1px solid var(--line);background:light-dark(#fff8e6,#2a2412);color:light-dark(#7a5300,#f3d27a);font-size:13.5px;font-weight:600;border-radius:0 0 14px 14px}
+.notice b{font-weight:800}
 .sub b{color:var(--ink);font-weight:600}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .view{padding:12px 18px 8px}.view[hidden]{display:none}
@@ -251,6 +253,17 @@ function kst(){const d=new Date(Date.now()+9*3600e3);return{ymd:d.toISOString().
 function dayInfo(ymd){const[y,mo,da]=ymd.split("-").map(Number);const dow=new Date(Date.UTC(y,mo-1,da)).getUTCDay();
   let off=null;if(ymd<START||ymd>END)off=ymd>END?"학기 종료 (방학 미운행)":"학기 시작 전";else if(dow===0||dow===6)off="주말 미운행";else if(OFF[ymd])off=OFF[ymd]+" 미운행";
   return{off,label:`${mo}월 ${da}일 (${WD[dow]})`}}
+function addDays(ymd,n){const d=new Date(Date.parse(ymd+"T00:00:00Z")+n*864e5);return d.toISOString().slice(0,10)}
+function nextRunDay(ymd){for(let k=1;k<=200;k++){const d=addDays(ymd,k);if(d>END)return null;if(!dayInfo(d).off)return d}return null}
+function lastRunDay(){let d=END;for(let k=0;k<30&&dayInfo(d).off;k++)d=addDays(d,-1);return d}
+const shortLabel=ymd=>{const[y,mo,da]=ymd.split("-").map(Number);return `${mo}월 ${da}일 (${WD[new Date(Date.UTC(y,mo-1,da)).getUTCDay()]})`};
+function dayNotice(ymd,info,isToday,afterLast){
+  if(info.off){const n=nextRunDay(ymd);return n?`다음 운행 <b>${shortLabel(n)}</b> · 첫차 <b class="num">${fmt(DEPS[0])}</b>`:`이번 학기 운행이 끝났어요 · 다음 학기 시간표가 나오면 업데이트돼요`}
+  const t=addDays(ymd,1),ti=dayInfo(t),last=lastRunDay();
+  if(ymd===last)return isToday?"오늘이 이번 학기 마지막 운행일이에요":"이번 학기 마지막 운행일이에요";
+  if(ti.off&&ymd<END){const n=nextRunDay(ymd);const why=ti.off.replace(" 미운행","");const who=isToday?"내일":shortLabel(t);return `${why==="주말"?who+"은 주말이라":who+"("+why+")은"} 운행하지 않아요${n?` · 다음 운행 ${shortLabel(n)}`:""}`}
+  const dl=Math.round((Date.parse(last)-Date.parse(ymd))/864e5);if(dl>0&&dl<=7)return `이번 학기 마지막 운행은 <b>${shortLabel(last)}</b>이에요`;
+  return ""}
 const DIRNAME=i=>i>=10?"새롬관(종점) 방면":STOPS[i+1]+(i+2<=11&&i+2!==11?"·"+STOPS[i+2]:"")+" 방면";
 const dirsOf=name=>[...new Set(STOPS.map((s,i)=>s===name&&i<11?i:-1).filter(i=>i>=0))];
 function trips(name){
@@ -336,10 +349,11 @@ function render(){
 
   let h=`<div class="stopname"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="2" width="16" height="12" rx="3" fill="var(--blue)"/><rect x="11" y="14" width="2" height="8" fill="var(--blue)"/><path d="M8 6h8M8 9.5h8" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>${stop}<small>정류장</small><button class="loc" id="loc" type="button" aria-label="현재 위치에서 가까운 정류장을 출발로"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>현재 위치</button></div>${nearNote&&!peekDate?`<div class="near">${nearNote}</div>`:""}`;
   if(!info.off&&!times.length)h+=`<div class="row"><div class="big msg">${dest}까지 가는 버스가 없어요</div></div><div class="sub">도착지를 바꿔보세요</div>`;
-  else if(info.off)h+=`<div class="row"><div class="big msg">오늘은 운행하지 않아요</div></div><div class="sub">${info.off}</div>`;
+  else if(info.off)h+=`<div class="row"><div class="big msg">${isToday?"오늘은":"이날은"} 운행하지 않아요</div></div><div class="sub">${info.off.replace(" 미운행","")} · ${dayNotice(ymd,info,isToday)}</div>`;
   else if(!isToday)h+=`<div class="row"><div class="big num">${fmt(times[0].t)}</div><div class="cd"><b>첫차</b><span>하루 ${times.length}회 정차</span></div></div><div class="sub">막차 <b class="num">${fmt(times[times.length-1].t)}</b></div>`;
   else if(!nx)h+=`<div class="row"><div class="big msg">오늘 운행이 끝났어요</div></div><div class="sub">막차 <b class="num">${fmt(times[times.length-1].t)}</b> · 다음 운행일에 다시 만나요</div>`;
   else{const a=times.find(x=>x.t>nx.t);h+=`<div class="row"><div class="big num">${fmt(nx.t)}</div><div class="cd"><b class="num">${left(nx.t-now.min)}</b><span>${multi?DIRNAME(nx.i):nx.r+"회차"}</span></div></div><div class="sub">${dest?`${dest} 도착 <b class="num">${fmt(nx.arr)}</b> · ${nx.arr-nx.t}분 걸려요${nx.via?" · 새롬관에서 다음 회차로 이어져요":""}`:a?`다음 <b class="num">${fmt(a.t)}</b> · ${left(a.t-now.min)}${multi?" · "+DIRNAME(a.i):""}`:"오늘 마지막 버스예요"}</div>`}
+  if(!info.off){const nt=dayNotice(ymd,info,isToday);if(nt)h+=`<div class="notice">${nt}</div>`}
   $("next").innerHTML=h;
 
   $("from").innerHTML=PICK.map(x=>`<option value="${x}"${x===stop?" selected":""}>${x}</option>`).join("");
