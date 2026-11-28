@@ -374,11 +374,11 @@ function maybeOnboard(){
   show();
 }
 
-// 누적 이용자 수 (GoatCounter 공개 카운터, 최대 4시간 캐시)
+// 누적 이용자 수: '방문/첫방문' 이벤트 수 = 처음 써본 기기 수 (GoatCounter 공개 카운터, 최대 4시간 캐시)
 function loadUsers(){
-  fetch("https://duribus.goatcounter.com/counter/TOTAL.json").then(r=>r.ok?r.json():null).then(d=>{
+  fetch("https://duribus.goatcounter.com/counter/"+encodeURIComponent("방문/첫방문")+".json").then(r=>r.ok?r.json():null).then(d=>{
     if(!d||!d.count)return;const n=+String(d.count).replace(/[^0-9]/g,"");if(!(n>=50))return;
-    const el=$("users");el.innerHTML=`지금까지 <b class="num">${n.toLocaleString("ko-KR")}명</b>이 두리버스를 확인했어요`;el.hidden=false;
+    const el=$("users");el.innerHTML=`지금까지 <b class="num">${n.toLocaleString("ko-KR")}명</b>이 두리버스를 써봤어요`;el.hidden=false;
   }).catch(()=>{});
 }
 function render(){
