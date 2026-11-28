@@ -374,11 +374,11 @@ function maybeOnboard(){
   show();
 }
 
-// 누적 이용 횟수: 앱 이용 기록(화면 방문 + 이벤트) 전체 합계. 사람 수가 아니므로 '회'로 표기. 실사용자 수는 GoatCounter '방문/첫방문'에서 내부 확인 (최대 4시간 캐시)
+// 누적 방문 횟수: 앱 첫 화면('/') 방문 수만 집계(이벤트 제외). 실사용자 수는 GoatCounter '방문/첫방문'에서 내부 확인 (최대 4시간 캐시)
 function loadUsers(){
-  fetch("https://duribus.goatcounter.com/counter/TOTAL.json").then(r=>r.ok?r.json():null).then(d=>{
-    if(!d||!d.count)return;const n=+String(d.count).replace(/[^0-9]/g,"");if(!(n>=100))return;
-    const el=$("users");el.innerHTML=`지금까지 두리버스 이용 <b class="num">${n.toLocaleString("ko-KR")}회</b>`;el.hidden=false;
+  fetch("https://duribus.goatcounter.com/counter/"+encodeURIComponent("/")+".json").then(r=>r.ok?r.json():null).then(d=>{
+    if(!d||!d.count)return;const n=+String(d.count).replace(/[^0-9]/g,"");if(!(n>=50))return;
+    const el=$("users");el.innerHTML=`지금까지 두리버스 방문 <b class="num">${n.toLocaleString("ko-KR")}회</b>`;el.hidden=false;
   }).catch(()=>{});
 }
 function render(){
